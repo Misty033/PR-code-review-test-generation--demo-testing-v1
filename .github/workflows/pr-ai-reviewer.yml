@@ -43,29 +43,30 @@ jobs:
 
       # 4. Install dependencies
       - name: Install pipeline dependencies
-        shell: pwsh
+        shell: powershell
         run: |
           python -m venv venv
           .\venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
           pip install -r pipeline/requirements.txt
 
+
       # 5. Set PYTHONPATH (pipeline + demo repo)
       - name: Set PYTHONPATH
-        shell: pwsh
+        shell: powershell
         run: |
           echo "PYTHONPATH=${{ github.workspace }}/pipeline/src;${{ github.workspace }}" >> $env:GITHUB_ENV
 
       # 6. Run deterministic phases (Phase 1–3)
       - name: Run deterministic pipeline
-        shell: pwsh
+        shell: powershell
         run: |
           .\venv\Scripts\Activate.ps1
           python -c "from pipeline.orchestrator import start_pipeline; start_pipeline(pr_number=${{ github.event.pull_request.number }}, event_type='opened')"
 
       # 7. Run AI orchestration (Phase 6)
       - name: Run AI pipeline
-        shell: pwsh
+        shell: powershell
         run: |
           .\venv\Scripts\Activate.ps1
           python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
