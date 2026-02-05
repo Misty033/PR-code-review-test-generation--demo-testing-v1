@@ -68,8 +68,7 @@ jobs:
         shell: pwsh
         run: |
           .\venv\Scripts\Activate.ps1
-          python -m pipeline.ai_orchestration.ai_orchestrator `
-            --pr_number ${{ github.event.pull_request.number }}
+          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
 
       # 8. Upload AI results
       - name: Upload AI results
