@@ -27,7 +27,7 @@ jobs:
 
       # 2. Checkout PIPELINE repo (FIXED, EXPLICIT REF)
       - name: Checkout pipeline repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: Misty033/ai-code-review-test-generation-pipeline-v1
           ref: main
@@ -43,10 +43,11 @@ jobs:
 
       # 4. Install dependencies
       - name: Install pipeline dependencies
+        shell: pwsh
         run: |
           python -m venv venv
           .\venv\Scripts\Activate.ps1
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r pipeline/requirements.txt
 
       # 5. Set PYTHONPATH (pipeline + demo repo)
@@ -67,11 +68,12 @@ jobs:
         shell: pwsh
         run: |
           .\venv\Scripts\Activate.ps1
-          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
+          python -m pipeline.ai_orchestration.ai_orchestrator `
+            --pr_number ${{ github.event.pull_request.number }}
 
       # 8. Upload AI results
       - name: Upload AI results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ai-review-results
           path: pipeline/artifacts/ai/
