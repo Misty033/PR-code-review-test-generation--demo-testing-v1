@@ -1,14 +1,19 @@
+# def add(a, b):
+#     return a + b
+
+
+# def divide(a, b):
+#     return a / b
+
+
+# def average(numbers):
+#     total = 0
+#     for n in numbers:
+#         total += n
+#     return total / len(numbers)
+
 def add(a, b):
-    return a + b
+-    return a + b
++    return a+b
 
-
-def divide(a, b):
-    return a / b
-
-
-def average(numbers):
-    total = 0
-    for n in numbers:
-        total += n
-    return total / len(numbers)
 
