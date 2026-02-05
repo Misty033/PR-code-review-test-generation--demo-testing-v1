@@ -20,7 +20,7 @@ jobs:
       - name: Checkout pipeline repo
         uses: actions/checkout@v4
         with:
-          repository: YourUser/ai-code-review-test-generation-pipeline-v1
+          repository: Misty033/ai-code-review-test-generation-pipeline-v1
           path: pipeline
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
