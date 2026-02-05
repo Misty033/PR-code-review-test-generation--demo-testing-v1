@@ -1,0 +1,70 @@
+name: AI Code Review & Test Generation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ai_pipeline:
+    runs-on: self-hosted  # Required for local LLM
+
+    steps:
+      # 1. Checkout PR code
+      - name: Checkout project PR
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # 2. Checkout pipeline repo
+      - name: Checkout pipeline repo
+        uses: actions/checkout@v3
+        with:
+          repository: YourUser/ai-code-review-test-generation-pipeline-v1
+          path: pipeline
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # 3. Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 4. Install dependencies
+      - name: Install pipeline dependencies
+        run: |
+          python -m venv venv
+          .\venv\Scripts\Activate.ps1
+          pip install --upgrade pip
+          pip install -r pipeline/requirements.txt
+
+      # 5. Set environment variables
+      - name: Set LLM environment
+        run: |
+          echo "ENV=github" >> $env:GITHUB_ENV
+          echo "LLM_PROVIDER=ollama" >> $env:GITHUB_ENV
+          echo "LLM_MODEL=qwen-2.5-coder" >> $env:GITHUB_ENV
+          echo "USE_MCP=false" >> $env:GITHUB_ENV
+          echo "ENABLE_AI_REVIEW=true" >> $env:GITHUB_ENV
+          echo "ENABLE_AI_TEST_GEN=true" >> $env:GITHUB_ENV
+          echo "BLOCK_ON_CRITICAL=false" >> $env:GITHUB_ENV
+          echo "MAX_AI_COMMENTS=5" >> $env:GITHUB_ENV
+
+      # 6. Set PYTHONPATH
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}/pipeline/src" >> $env:GITHUB_ENV
+
+      # 7. Run AI Orchestrator
+      - name: Run AI pipeline
+        shell: pwsh
+        run: |
+          .\venv\Scripts\Activate.ps1
+          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
+
+      # 8. Upload AI results as artifact
+      - name: Upload AI results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ai-review-results
+          path: pipeline/artifacts/ai/pr_${{ github.event.pull_request.number }}_ai.json
