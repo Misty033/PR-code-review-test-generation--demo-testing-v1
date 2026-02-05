@@ -11,14 +11,14 @@ jobs:
     steps:
       # 1. Checkout PR code
       - name: Checkout project PR
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
 
       # 2. Checkout pipeline repo
       - name: Checkout pipeline repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: YourUser/ai-code-review-test-generation-pipeline-v1
           path: pipeline
@@ -33,14 +33,16 @@ jobs:
 
       # 4. Install dependencies
       - name: Install pipeline dependencies
+        shell: pwsh
         run: |
           python -m venv venv
           .\venv\Scripts\Activate.ps1
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r pipeline/requirements.txt
 
       # 5. Set environment variables
       - name: Set LLM environment
+        shell: pwsh
         run: |
           echo "ENV=github" >> $env:GITHUB_ENV
           echo "LLM_PROVIDER=ollama" >> $env:GITHUB_ENV
@@ -53,18 +55,21 @@ jobs:
 
       # 6. Set PYTHONPATH
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}/pipeline/src" >> $env:GITHUB_ENV
+        shell: pwsh
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/pipeline/src" >> $env:GITHUB_ENV
 
       # 7. Run AI Orchestrator
       - name: Run AI pipeline
         shell: pwsh
         run: |
           .\venv\Scripts\Activate.ps1
-          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
+          python -m pipeline.ai_orchestration.ai_orchestrator `
+            --pr_number ${{ github.event.pull_request.number }}
 
       # 8. Upload AI results as artifact
       - name: Upload AI results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ai-review-results
           path: pipeline/artifacts/ai/pr_${{ github.event.pull_request.number }}_ai.json
