@@ -1,4 +1,4 @@
-name: AI Code Review & Test Generation
+name: AI Code Review & Test Generation (Demo Repo)
 
 on:
   pull_request:
@@ -6,30 +6,40 @@ on:
 
 jobs:
   ai_pipeline:
-    runs-on: self-hosted  # Required for local LLM
+    runs-on: self-hosted
+
+    env:
+      ENV: github
+      LLM_PROVIDER: ollama
+      LLM_MODEL: qwen-2.5-coder
+      USE_MCP: false
+      ENABLE_AI_REVIEW: true
+      ENABLE_AI_TEST_GEN: true
+      BLOCK_ON_CRITICAL: false
+      MAX_AI_COMMENTS: 5
 
     steps:
-      # 1. Checkout PR code
-      - name: Checkout project PR
+      # 1. Checkout DEMO repo PR (this repo)
+      - name: Checkout demo project PR
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
 
-      # 2. Checkout pipeline repo
+      # 2. Checkout PIPELINE repo (FIXED, EXPLICIT REF)
       - name: Checkout pipeline repo
         uses: actions/checkout@v4
         with:
           repository: Misty033/ai-code-review-test-generation-pipeline-v1
+          ref: main
           path: pipeline
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PIPELINE_REPO_TOKEN2 }}
           fetch-depth: 0
 
       # 3. Setup Python
-      - name: Set up Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # 4. Install dependencies
       - name: Install pipeline dependencies
@@ -40,36 +50,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r pipeline/requirements.txt
 
-      # 5. Set environment variables
-      - name: Set LLM environment
-        shell: pwsh
-        run: |
-          echo "ENV=github" >> $env:GITHUB_ENV
-          echo "LLM_PROVIDER=ollama" >> $env:GITHUB_ENV
-          echo "LLM_MODEL=qwen-2.5-coder" >> $env:GITHUB_ENV
-          echo "USE_MCP=false" >> $env:GITHUB_ENV
-          echo "ENABLE_AI_REVIEW=true" >> $env:GITHUB_ENV
-          echo "ENABLE_AI_TEST_GEN=true" >> $env:GITHUB_ENV
-          echo "BLOCK_ON_CRITICAL=false" >> $env:GITHUB_ENV
-          echo "MAX_AI_COMMENTS=5" >> $env:GITHUB_ENV
-
-      # 6. Set PYTHONPATH
+      # 5. Set PYTHONPATH (pipeline + demo repo)
       - name: Set PYTHONPATH
         shell: pwsh
         run: |
-          echo "PYTHONPATH=${{ github.workspace }}/pipeline/src" >> $env:GITHUB_ENV
+          echo "PYTHONPATH=${{ github.workspace }}/pipeline/src;${{ github.workspace }}" >> $env:GITHUB_ENV
 
-      # 7. Run AI Orchestrator
+      # 6. Run deterministic phases (Phase 1–3)
+      - name: Run deterministic pipeline
+        shell: pwsh
+        run: |
+          .\venv\Scripts\Activate.ps1
+          python -c "from pipeline.orchestrator import start_pipeline; start_pipeline(pr_number=${{ github.event.pull_request.number }}, event_type='opened')"
+
+      # 7. Run AI orchestration (Phase 6)
       - name: Run AI pipeline
         shell: pwsh
         run: |
           .\venv\Scripts\Activate.ps1
-          python -m pipeline.ai_orchestration.ai_orchestrator `
-            --pr_number ${{ github.event.pull_request.number }}
+          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
 
-      # 8. Upload AI results as artifact
+      # 8. Upload AI results
       - name: Upload AI results
         uses: actions/upload-artifact@v4
         with:
           name: ai-review-results
-          path: pipeline/artifacts/ai/pr_${{ github.event.pull_request.number }}_ai.json
+          path: pipeline/artifacts/ai/
