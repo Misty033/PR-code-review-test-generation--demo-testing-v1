@@ -91,4 +91,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ai-review-results
-          path: pipeline/artifacts/
+          path: artifacts/
