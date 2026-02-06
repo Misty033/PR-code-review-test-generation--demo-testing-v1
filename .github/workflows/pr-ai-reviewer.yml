@@ -65,6 +65,7 @@ jobs:
           .\venv\Scripts\Activate.ps1
           python pipeline/integration_test.py
 
+
       - name: Run full pipeline
         shell: powershell
         env:
@@ -73,18 +74,18 @@ jobs:
         run: |
           .\venv\Scripts\Activate.ps1
 
-          python - <<EOF
+          python -c "
           import os
           from pipeline.orchestrator import start_pipeline
 
-          pr = int(os.environ["PR_NUMBER"])
-          ev = os.environ["EVENT_TYPE"]
+          pr = int(os.environ['PR_NUMBER'])
+          ev = os.environ['EVENT_TYPE']
 
           result = start_pipeline(pr, ev)
 
-          print("PIPELINE RESULT:")
+          print('PIPELINE RESULT:')
           print(result)
-          EOF
+          "
 
       - name: Upload AI results
         uses: actions/upload-artifact@v4
