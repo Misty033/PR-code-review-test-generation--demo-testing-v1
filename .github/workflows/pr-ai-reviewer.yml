@@ -25,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 2. Checkout PIPELINE repo (FIXED, EXPLICIT REF)
+      # 2. Checkout PIPELINE repo (explicit main branch)
       - name: Checkout pipeline repo
         uses: actions/checkout@v4
         with:
@@ -35,21 +35,22 @@ jobs:
           token: ${{ secrets.PIPELINE_REPO_TOKEN2 }}
           fetch-depth: 0
 
-      # 3. Setup Python
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      # 3. Set existing Python path
+      - name: Use existing Python 3.11
+        shell: powershell
+        run: |
+          $pythonPath="C:\Users\BAPS\AppData\Local\Programs\Python\Python311\python.exe"
+          echo "PYTHON_PATH=$pythonPath" >> $env:GITHUB_ENV
+          & $pythonPath --version
 
       # 4. Install dependencies
       - name: Install pipeline dependencies
         shell: powershell
         run: |
-          python -m venv venv
+          & $env:PYTHON_PATH -m venv venv
           .\venv\Scripts\Activate.ps1
-          python -m pip install --upgrade pip
-          pip install -r pipeline/requirements.txt
-
+          & $env:PYTHON_PATH -m pip install --upgrade pip
+          & $env:PYTHON_PATH -m pip install -r pipeline/requirements.txt
 
       # 5. Set PYTHONPATH (pipeline + demo repo)
       - name: Set PYTHONPATH
@@ -62,14 +63,14 @@ jobs:
         shell: powershell
         run: |
           .\venv\Scripts\Activate.ps1
-          python -c "from pipeline.orchestrator import start_pipeline; start_pipeline(pr_number=${{ github.event.pull_request.number }}, event_type='opened')"
+          & $env:PYTHON_PATH -c "from pipeline.orchestrator import start_pipeline; start_pipeline(pr_number=${{ github.event.pull_request.number }}, event_type='opened')"
 
       # 7. Run AI orchestration (Phase 6)
       - name: Run AI pipeline
         shell: powershell
         run: |
           .\venv\Scripts\Activate.ps1
-          python -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
+          & $env:PYTHON_PATH -m pipeline.ai_orchestration.ai_orchestrator --pr_number ${{ github.event.pull_request.number }}
 
       # 8. Upload AI results
       - name: Upload AI results
