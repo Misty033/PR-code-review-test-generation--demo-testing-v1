@@ -9,7 +9,7 @@ jobs:
     runs-on: self-hosted
 
     env:
-      ENV: github
+      ENV: local
       LLM_PROVIDER: ollama
       LLM_MODEL: qwen-2.5-coder
       USE_MCP: false
