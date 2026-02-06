@@ -53,6 +53,12 @@ jobs:
         run: |
           echo "PYTHONPATH=${{ github.workspace }}/pipeline/src;${{ github.workspace }}" >> $env:GITHUB_ENV
 
+      - name: Set UTF-8 encoding
+        shell: powershell
+        run: |
+          echo "PYTHONUTF8=1" >> $env:GITHUB_ENV
+          echo "PYTHONIOENCODING=utf-8" >> $env:GITHUB_ENV
+
       - name: Run integration test
         shell: powershell
         run: |
