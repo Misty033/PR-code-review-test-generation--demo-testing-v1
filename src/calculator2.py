@@ -79,3 +79,15 @@ def log10p(a):
 
 def log2p(a):
     return log2p(a)
+
+def sinh(a):
+    return sinh(a)
+
+def cosh(a):
+    return cosh(a)
+
+def tanh(a):
+    return tanh(a)
+
+def coth(a):
+    return coth(a)
