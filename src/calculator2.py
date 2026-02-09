@@ -67,3 +67,15 @@ def log1p(a):
 
 def log2p(a):
     return log2p(a)
+
+def log10p(a):
+    return log10p(a)
+
+def log2p(a):
+    return log2p(a)
+
+def log10p(a):
+    return log10p(a)
+
+def log2p(a):
+    return log2p(a)
