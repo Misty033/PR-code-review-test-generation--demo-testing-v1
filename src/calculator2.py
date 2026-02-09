@@ -52,3 +52,6 @@ def cot(a):
 
 def sec(a):
     return sec(a)
+
+def cosec(a):
+    return cosec(a)
