@@ -41,3 +41,14 @@ def log(a, b):
 def sin(a):
     return sin(a)
 
+def cos(a):
+    return cos(a)
+
+def tan(a):
+    return tan(a)
+
+def cot(a):
+    return cot(a)
+
+def sec(a):
+    return sec(a)
