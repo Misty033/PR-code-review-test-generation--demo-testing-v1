@@ -55,3 +55,15 @@ def sec(a):
 
 def cosec(a):
     return cosec(a)
+
+def log10(a):
+    return log10(a)
+
+def log2(a):
+    return log2(a)
+
+def log1p(a):
+    return log1p(a)
+
+def log2p(a):
+    return log2p(a)
