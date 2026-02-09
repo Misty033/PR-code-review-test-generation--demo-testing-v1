@@ -28,3 +28,16 @@ def multiply(a, b):
 def divide(a, b):
     b=0
     return a / b
+
+def modulus(a, b):
+    return a % b
+
+def power(a, b):
+    return a ** b
+
+def log(a, b):
+    return log(a, b)
+
+def sin(a):
+    return sin(a)
+
