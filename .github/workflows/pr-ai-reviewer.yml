@@ -11,96 +11,84 @@ jobs:
     env:
       ENV: local
       LLM_PROVIDER: ollama
-      LLM_MODEL: qwen2.5-coder
+      LLM_MODEL: qwen2.5-coder:1.5b
       OLLAMA_URL: http://localhost:11434
-
       ENABLE_AI_REVIEW: true
       ENABLE_AI_TEST_GEN: true
       BLOCK_ON_CRITICAL: false
       MAX_AI_COMMENTS: 5
 
     steps:
+      - name: Checkout demo repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # 1️⃣ Download DEMO repo (this repo)
-    - name: Checkout demo repo
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout pipeline repo
+        uses: actions/checkout@v4
+        with:
+          repository: Misty033/ai-code-review-test-generation-pipeline-v1
+          ref: main
+          path: pipeline
+          token: ${{ secrets.PIPELINE_REPO_TOKEN2 }}
+          fetch-depth: 0
 
+      - name: Use Python 3.11
+        shell: powershell
+        run: |
+          $pythonPath="C:\Users\BAPS\AppData\Local\Programs\Python\Python311\python.exe"
+          echo "PYTHON_PATH=$pythonPath" >> $env:GITHUB_ENV
+          & $pythonPath --version
 
-    # 2️⃣ Download PIPELINE repo
-    - name: Checkout pipeline repo
-      uses: actions/checkout@v4
-      with:
-        repository: Misty033/ai-code-review-test-generation-pipeline-v1
-        ref: main
-        path: pipeline
-        token: ${{ secrets.PIPELINE_REPO_TOKEN2 }}
-        fetch-depth: 0
+      - name: Install dependencies
+        shell: powershell
+        run: |
+          & $env:PYTHON_PATH -m venv venv
+          .\venv\Scripts\Activate.ps1
+          pip install --upgrade pip
+          pip install -r pipeline/requirements.txt
 
+      - name: Set PYTHONPATH
+        shell: powershell
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/pipeline/src;${{ github.workspace }}" >> $env:GITHUB_ENV
 
-    # 3️⃣ Set Python path (Windows)
-    - name: Use Python 3.11
-      shell: powershell
-      run: |
-        $pythonPath="C:\Users\BAPS\AppData\Local\Programs\Python\Python311\python.exe"
-        echo "PYTHON_PATH=$pythonPath" >> $env:GITHUB_ENV
-        & $pythonPath --version
+      - name: Set UTF-8 encoding
+        shell: powershell
+        run: |
+          echo "PYTHONUTF8=1" >> $env:GITHUB_ENV
+          echo "PYTHONIOENCODING=utf-8" >> $env:GITHUB_ENV
 
-
-    # 4️⃣ Create venv + install dependencies
-    - name: Install dependencies
-      shell: powershell
-      run: |
-        & $env:PYTHON_PATH -m venv venv
-        .\venv\Scripts\Activate.ps1
-
-        pip install --upgrade pip
-        pip install -r pipeline/requirements.txt
-
-
-    # 5️⃣ Set PYTHONPATH (so pipeline imports work)
-    - name: Set PYTHONPATH
-      shell: powershell
-      run: |
-        echo "PYTHONPATH=${{ github.workspace }}/pipeline/src;${{ github.workspace }}" >> $env:GITHUB_ENV
-
-
-    # 6️⃣ Run integration test (quick sanity check)
-    - name: Run integration test
-      shell: powershell
-      run: |
-        .\venv\Scripts\Activate.ps1
-
-        python pipeline/integration_test.py
+      - name: Run integration test
+        shell: powershell
+        run: |
+          .\venv\Scripts\Activate.ps1
+          python pipeline/integration_test.py
 
 
-    # 7️⃣ Run FULL pipeline (all phases together)
-    - name: Run full pipeline
-      shell: powershell
-      env:
-        PR_NUMBER: ${{ github.event.pull_request.number }}
-        EVENT_TYPE: ${{ github.event.action }}
-      run: |
-        .\venv\Scripts\Activate.ps1
+      - name: Run full pipeline
+        shell: powershell
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_TYPE: ${{ github.event.action }}
+        run: |
+          .\venv\Scripts\Activate.ps1
 
-        python - <<EOF
-        import os
-        from pipeline.orchestrator import start_pipeline
+          python -c "
+          import os
+          from pipeline.orchestrator import start_pipeline
 
-        pr = int(os.environ["PR_NUMBER"])
-        ev = os.environ["EVENT_TYPE"]
+          pr = int(os.environ['PR_NUMBER'])
+          ev = os.environ['EVENT_TYPE']
 
-        result = start_pipeline(pr, ev)
+          result = start_pipeline(pr, ev)
 
-        print("PIPELINE RESULT:")
-        print(result)
-        EOF
+          print('PIPELINE RESULT:')
+          print(result)
+          "
 
-
-    # 8️⃣ Upload results
-    - name: Upload AI results
-      uses: actions/upload-artifact@v4
-      with:
-        name: ai-review-results
-        path: pipeline/artifacts/
+      - name: Upload AI results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-review-results
+          path: artifacts/
