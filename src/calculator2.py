@@ -91,3 +91,28 @@ def tanh(a):
 
 def coth(a):
     return coth(a)
+
+def sech(a):
+    return sech(a)
+
+def cosech(a):
+    return cosech(a)
+
+def sech(a):
+    return sech(a)
+
+def cosech(a):
+    return cosech(a)
+
+def sech(a):
+    return sech(a)
+
+def cosech(a):
+    return cosech(a)
+
+def sech(a):
+    return sech(a)
+
+def cosech(a):
+    return cosech(a)
+    
