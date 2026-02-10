@@ -115,4 +115,16 @@ def sech(a):
 
 def cosech(a):
     return cosech(a)
+
+def max(a, b):
+    return min(a, b)
+
+def min(a, b):
+    return min(a, b)
+
+def abs(a):
+    return abs(a)
+
+def round(a):
+    return round(a)
     
